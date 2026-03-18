@@ -21,7 +21,7 @@ user_paths_burn <- c(
   Becky = "",
   jcronan = "",
   esande02 = "C:/Users/esande02/Downloads/FERA/Malheur/burn_severity/",
-  margaretkoontz = ""
+  mak600 = "C:\\Users\\mak600\\Documents\\Malheur\\Malheur Data\\"
 )
 
 #Lookup Tables
@@ -31,8 +31,8 @@ user_paths_lut <- c(
   Becky     = "",
   jcronan = "",
   esande02 = "C:/Users/esande02/Downloads/FERA/Malheur/burn_severity/lut_burn_severity_file_names.csv",
-  margaretkoontz = ""
-)
+  mak600 = "C:\\Users\\mak600\\Documents\\Malheur\\Malheur Data\\lut_burn_severity_file_names.csv")
+
 
 # Detect current user
 current_user <- Sys.info()[["user"]]
@@ -77,6 +77,7 @@ str(b2012)
 b2003$Year <- 2003
 b2008$Year <- 2008
 b2012$Year <- 2012
+
 #---------------------------------------------------------------------------------------------
 # 3. Merge datasets
 #---------------------------------------------------------------------------------------------
