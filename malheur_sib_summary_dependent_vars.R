@@ -40,7 +40,7 @@ shrubPlot <- shrubPlot %>% mutate(Year = as.factor(Year),
 
 
 #running summary statistics####
-##fuels data
+#fuels data####
 ###one-hour fuels
 fuelsQuad %>% group_by(Year) %>%
   summarise(meanHrone = mean(hrone, na.rm = TRUE),
@@ -94,9 +94,37 @@ fuelsQuad %>% group_by(Year) %>%
 
 ##histograms
 ###one-hour fuels
+(ggplot(fuelsQuad, aes(x = hrone)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+###ten-hour fuels
+(ggplot(fuelsQuad, aes(x = hrten)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+###hundred-hour fuels
+(ggplot(fuelsQuad, aes(x = hrhun)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+###thousand-hour fuels
+(ggplot(fuelsQuad, aes(x = hrthou)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+###litter and duff depths
+(ggplot(fuelsQuad, aes(x = landd)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
 
 
-#o-horizon depth
+#quadrat o-horizon depth####
 odepthQuad %>% group_by(Year) %>%
   summarise(meanO_Depth = mean(O_Depth, na.rm = TRUE),
             medianO_Depth = median(O_Depth, na.rm = TRUE),
@@ -106,8 +134,16 @@ odepthQuad %>% group_by(Year) %>%
             sdO_Depth = sd(O_Depth, na.rm = TRUE),
             n = n())
 
-#quadrat vegetation cover
-vegQuad %>% group_by(Year) %>%
+#o-horizon histogram
+(ggplot(odepthQuad, aes(x = O_Depth)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+
+#quadrat vegetation cover####
+##cheatgrass
+vegQuad %>% filter(Species == "BRTE") %>% group_by(Yr) %>%
   summarise(meanCover = mean(Cover, na.rm = TRUE),
             medianCover = median(Cover, na.rm = TRUE),
             minCover = min(Cover, na.rm = TRUE),
@@ -116,8 +152,8 @@ vegQuad %>% group_by(Year) %>%
             sdCover = sd(Cover, na.rm = TRUE),
             n = n())
 
-#plot shrub cover
-shrubPlot %>% group_by(Year) %>%
+##snowbrush
+vegQuad %>% filter(Species == "CEVE") %>% group_by(Yr) %>%
   summarise(meanCover = mean(Cover, na.rm = TRUE),
             medianCover = median(Cover, na.rm = TRUE),
             minCover = min(Cover, na.rm = TRUE),
@@ -125,4 +161,99 @@ shrubPlot %>% group_by(Year) %>%
             rangeCover = max(Cover, na.rm = TRUE) - min(Cover, na.rm = TRUE),
             sdCover = sd(Cover, na.rm = TRUE),
             n = n())
+
+##rabbitbrush
+vegQuad %>% filter(Species == "RABBIT") %>% group_by(Yr) %>%
+  summarise(meanCover = mean(Cover, na.rm = TRUE),
+            medianCover = median(Cover, na.rm = TRUE),
+            minCover = min(Cover, na.rm = TRUE),
+            maxCover = max(Cover, na.rm = TRUE),
+            rangeCover = max(Cover, na.rm = TRUE) - min(Cover, na.rm = TRUE),
+            sdCover = sd(Cover, na.rm = TRUE),
+            n = n())
+
+
+#histograms
+##cheatgrass
+(ggplot(vegQuad %>% filter(Species == "BRTE"), aes(x = Cover)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Yr) +
+    theme_bw())
+
+##snowbrush
+(ggplot(vegQuad %>% filter(Species == "CEVE"), aes(x = Cover)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Yr) +
+    theme_bw())
+
+##rabbitbrush
+(ggplot(vegQuad %>% filter(Species == "RABBIT"), aes(x = Cover)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Yr) +
+    theme_bw())
+
+
+#plot shrub cover####
+##snowbrush
+shrubPlot %>% filter(Code == "CEVE") %>% group_by(Year) %>%
+  summarise(meanCover = mean(Cover, na.rm = TRUE),
+            medianCover = median(Cover, na.rm = TRUE),
+            minCover = min(Cover, na.rm = TRUE),
+            maxCover = max(Cover, na.rm = TRUE),
+            rangeCover = max(Cover, na.rm = TRUE) - min(Cover, na.rm = TRUE),
+            sdCover = sd(Cover, na.rm = TRUE),
+            n = n())
+
+##rabbitbrush
+shrubPlot %>% filter(Code == "RABBIT") %>% group_by(Year) %>%
+  summarise(meanCover = mean(Cover, na.rm = TRUE),
+            medianCover = median(Cover, na.rm = TRUE),
+            minCover = min(Cover, na.rm = TRUE),
+            maxCover = max(Cover, na.rm = TRUE),
+            rangeCover = max(Cover, na.rm = TRUE) - min(Cover, na.rm = TRUE),
+            sdCover = sd(Cover, na.rm = TRUE),
+            n = n())
+
+
+#histograms
+##snowbrush
+(ggplot(shrubPlot %>% filter(Code == "CEVE"), aes(x = Cover)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+##rabbitbrush
+(ggplot(shrubPlot %>% filter(Code == "RABBIT"), aes(x = Cover)) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~Year) +
+    theme_bw())
+
+
+###############################
+#tests####
+##vegetation quads (3 species per quad, 8 quads per plot, 3 plots per treatment (6 for control), and 14 per stand (13 for Trout))
+###checking that every quadrat has 3 species
+vegSpCheck <- vegQuad %>% group_by(Yr, Stand, Treatment, Plot, Quad) %>%
+  summarise(n_Species = n_distinct(Species), .groups = 'drop')
+
+###checking that every year has 89 plots, 5 stands, and 5 treatments
+vegYrCheck <- vegQuad %>% group_by(Yr) %>%
+  summarise(n_Plots = n_distinct(Plot),
+            n_Treatment = n_distinct(Treatment),
+            n_Stand = n_distinct(Stand), .groups = 'drop')
+
+vegQuadCheck <- vegQuad %>% group_by(Yr, Plot) %>%
+  summarise(n_Quad = n_distinct(Quad), .groups = 'drop')
+
+vegStandCheck <- vegQuad %>% group_by(Yr) %>%
+  summarise(n_Stand = n_distinct(Stand), .groups = 'drop')
+
+vegTreatmentCheck <- vegQuad %>% group_by(Yr) %>%
+  summarise(n_Treat = n_distinct(Treatment), .groups = 'drop')
+
+###making sure every plot has 8 quadrats
+vegQuadCheck <- vegQuad %>% group_by(Yr, Stand, Treatment, Plot) %>%
+  summarise(n_Quads = n_distinct(Quad), .groups = 'drop')
+
+###making sure the unique combination of year, stand, treatment, plot, quadrat, and species exists
 
