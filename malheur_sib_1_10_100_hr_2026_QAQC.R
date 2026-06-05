@@ -1,7 +1,7 @@
 #############################################################################################
-# SIB 1000 hr fuels QA/QC Script
+# SIB 1 10 100 hr fuels QA/QC Script
 # Author: Maggie Koontz
-# Purpose: Review SIB 1000 hr fuels entered from spring 2026 data collection for errors
+# Purpose: Review SIB 1 10 100 hr fuels entered from spring 2026 data collection for errors
 # Date: June 5, 2026
 #############################################################################################
 
@@ -47,7 +47,7 @@ if (!current_user %in% names(user_paths_data)) {
 # Load 1000 hr data
 
 dat <- read_excel(paste(user_paths_data[current_user], 
-                        "SIB_fuels_1000_hr.xlsx",
+                        "SIB_fuels_1_10_100_hr.xlsx",
                         sep = ""))
 dat_2026 <- dat %>%
   filter(!Year=="2025")
@@ -55,14 +55,15 @@ dat_2026 <- dat %>%
 # Load litter duff data to cross reference direction
 
 litter_duff <- read_excel(paste(user_paths_data[current_user], 
-                        "SIB_fuels_litter_duff.xlsx",
-                        sep = ""))
+                                "SIB_fuels_litter_duff.xlsx",
+                                sep = ""))
 
 # Load 1, 10, 100 hr data to cross reference direction
 
-other_fuels <- read_excel(paste(user_paths_data[current_user], 
-                        "SIB_fuels_1_10_100_hr.xlsx",
-                        sep = ""))
+thousand_hr_fuels <- read_excel(paste(user_paths_data[current_user], 
+                                "SIB_fuels_1000_hr.xlsx",
+                                sep = ""))
+
 
 #---------------------------------------------------------------------------------------------
 # 2. Numeric Check
@@ -74,31 +75,34 @@ dat_2026 %>%
 #check for negatives
 dat_2026 %>%
   filter(Diameter < 1)
-  
-dat_2026 %>%
-  filter(`Decay class` < 1)
 
-ggplot(dat_2026, aes(x = Diameter)) +
+dat_2026 %>%
+  filter(`1-hour` < 0)
+
+dat_2026 %>%
+  filter(`10-hour` < 0)
+
+dat_2026 %>%
+  filter(`100-hour` < 0)
+
+ggplot(dat_2026, aes(x = `1-hour`)) +
   geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
-  labs(title = "Histogram of 1000 Hr Fuels Diameter", x = "diameter (cm)", y = "Count") +
+  labs(title = "Histogram of 1 Hr Fuels Counts", x = "Number of Fuels", y = "Count") +
   theme_minimal()
 
-#check all 1000 fuels are greater than the cutoff diameter
-dat_2026 %>%
-  filter(Diameter < 7.6)
-#three samples that should be changed to 100-hr fuels
-
-#check outlier samples that are highlighted by the histogram
-dat_2026 %>%
-  filter(Diameter > 40)
-#not any other data like length to verify high diameters
-
-#check decay class frequencies
-ggplot(dat_2026, aes(x = `Decay class`)) +
-  geom_bar(binwidth = 1, fill = "skyblue", color = "black") +
-  labs(title = "Histogram of Decay Classes", x = "Decay Class", y = "Count") +
+ggplot(dat_2026, aes(x = `10-hour`)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  labs(title = "Histogram of 10 Hr Fuels Counts", x = "Number of Fuels", y = "Count") +
   theme_minimal()
-#ok
+
+#ok, one transect had 14 counts
+
+ggplot(dat_2026, aes(x = `100-hour`)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  labs(title = "Histogram of 100 Hr Fuels Counts", x = "Number of Fuels", y = "Count") +
+  theme_minimal()
+
+#ok, a few had 10 counts
 
 
 #---------------------------------------------------------------------------------------------
@@ -108,17 +112,11 @@ ggplot(dat_2026, aes(x = `Decay class`)) +
 unique(dat_2026$Year)
 unique(dat_2026$Stand)
 unique(dat_2026$Treatment)
-unique(dat_2026$Species)
-unique(dat_2026$Elevated)
+
 
 #---------------------------------------------------------------------------------------------
 # 4. Conditional Check
 #---------------------------------------------------------------------------------------------
-
-#check any transects without 1000 fuels do not have data in other columns
-dat_2026 %>%
-  filter(Species == "NONE") %>%
-  filter(!is.na(Elevated)| !is.na(Diameter) | !is.na(`Decay class`))
 
 #check that transect directions match at least one of the transect directions in litter duff
 #for the same stand, treatment, plots
@@ -132,66 +130,72 @@ missing_dirs_1 <- dat_2026 %>%
 
 missing_dirs_1
 
-#four directions in 1000 hr fuels that do not match litter duff data
+
+#six directions in 1 10 100 hr fuels that do not match litter duff data
+
+#1. Directions 274 and 92
+
 #compare these with missing_dir with the rows they SHOULD match with
 litter_duff %>%
   filter(Stand=="Driveway 17") %>%
-  filter(Treatment == "Control") %>%
-  filter(Plot == "20.0")
-#in litter_duff data set, driveway 17 control 20 has directions 93 and 273
-#but in 1000hr fuels, driveway 17 control plot 20 has directions 20 and 200
-#93 and 273 are correct according to scanned datasheets. Not sure why directions
-#20 and 200 made it onto the 1000 hours fuels dataset, but there are no fuels 
-#recorded for these transects so it doesn't effect the data
+  filter(Treatment == "Fall 15") %>%
+  filter(Plot == "17B")
+#in litter_duff data set, there is no driveway 17 fall 15 17B
+#I believe these data were misrecorded as Driveway 17 and should be Driveway 26
+#check:
+litter_duff %>%
+  filter(Stand=="Driveway 26") %>%
+  filter(Treatment == "Fall 15") %>%
+  filter(Plot == "17B")
+#the only plot 17B when looking at the original scanned datasheets is in driveway 26
+#and the same note "no ends found, random azimuth chosen" is written for both driveway 17 plot 
+#17B sample in 1 10 100 hr fuels and driveway 26 plot 17B in litter duff and physical data scan
 
-other_fuels %>%
-  filter(Stand=="Driveway 17") %>%
-  filter(Treatment == "Control") %>%
-  filter(Plot == "20.0")
 
+#2. directions 9 and 189
 
 litter_duff %>%
   filter(Stand=="Driveway 17") %>%
   filter(Treatment=="Fall 15") %>%
-  filter(Plot == "17B")
-#in litter_duff dataset, there is no driveway 17 fall 15, plot 17B
-#but in 1000hr fuels, driveway 17 fall 15 plot 17B exists with directions 274 and 94
+  filter(Plot == "15A")
+#in litter_duff dataset, there is no driveway 17 fall 15, plot 15A, but there is
+#driveway 15 fall 5 plot 15A
+
+#check this matches direction:
+litter_duff %>%
+  filter(Stand=="Driveway 17") %>%
+  filter(Treatment=="Fall 5") %>%
+  filter(Plot == "15A")
+#yes, so fall 15 shoudl be changed to fall 5
+
+
+#3. directions 136 and 316
+litter_duff %>%
+  filter(Stand=="Driveway 17") %>%
+  filter(Treatment=="Fall 15") %>%
+  filter(Plot == "15.0")
+#in litter_duff dataset, there is no driveway 17 fall 15, plot 15
+#I believe these in 1 10 100 hr dataset Driveway 17 Fall 15  17B should be Fall 5
+#because this makes the directions match litter_duff data
+#check:
+litter_duff %>%
+  filter(Stand=="Driveway 17") %>%
+  filter(Treatment=="Fall 5") %>%
+  filter(Plot == "15.0")
+#yes
 
 
 
-#do the same check but comparing 1000 hr fuels to 1, 10, 100 hr fuels dataset
-#check that transect directions match at least one of the transect directions
+#check that transect directions match at least one of the transect directions in 1000 hr fuels
 #for the same stand, treatment, plots
 missing_dirs_2 <- dat_2026 %>%
   distinct(Stand, Treatment, Plot, Direction) %>%
   anti_join(
-    other_fuels %>%
+    thousand_hr_fuels %>%
       distinct(Stand, Treatment, Plot, Direction),
     by = c("Stand", "Treatment", "Plot", "Direction")
   )
 
-#driveway 17 control plot 20 direction 20 and 200 come up in both missing dir 1 and 2
-other_fuels %>%
-  filter(Stand=="Driveway 17") %>%
-  filter(Treatment == "Control") %>%
-  filter(Plot == "20.0")
+#there are 20 instances of directions not matching 
 
-other_fuels %>%
-  filter(Stand=="Driveway 17") %>%
-  filter(Treatment=="Fall 5") %>%
-  filter(Plot == "15A")
-#this combination exists in 1000 hour fuels but not 1 10 100 hr fuels
-
-other_fuels %>%
-  filter(Stand=="Driveway 17") %>%
-  filter(Treatment=="Fall 5") %>%
-  filter(Plot == "15.0")
-#this combination exists in 1000 hr fuesl but not 1 10 100 hr fuels
-
-#CONCLUSIONS:
-
-#Driveway 17 Fall 5 15A directions 189 and 9,
-#Driveway 17 Fall 5 15.0 directions 136 and 316,
-#Driveway 17 Fall 15 17B directions 274 and 94
-#are combinations that exists in 1000 hr fuels data but not in litter duff data or 1 10 100 hr data
 
